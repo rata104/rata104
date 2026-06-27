@@ -1,0 +1,2729 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="apple-mobile-web-app-title" content="テニス戦績">
+
+<title>テニス戦績</title>
+
+mlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23d4e157'/%3E%3Cpath d='M15 50 Q50 20 85 50 M15 50 Q50 80 85 50' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+
+<style>
+
+:root {
+
+  --primary: #2e7d32;
+
+  --primary-light: #4caf50;
+
+  --primary-dark: #1b5e20;
+
+  --bg: #f5f7f5;
+
+  --card: #ffffff;
+
+  --text: #1a1a1a;
+
+  --text-sub: #666;
+
+  --border: #e0e0e0;
+
+  --win: #2e7d32;
+
+  --lose: #c62828;
+
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body { height: 100%; overflow-x: hidden; }
+
+body {
+
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+
+  background: var(--bg);
+
+  color: var(--text);
+
+  font-size: 15px;
+
+  line-height: 1.5;
+
+  padding-bottom: 80px;
+
+  -webkit-font-smoothing: antialiased;
+
+}
+
+button, input, select, textarea { font-family: inherit; font-size: 15px; }
+
+
+
+/* ヘッダー */
+
+.header {
+
+  position: sticky; top: 0; z-index: 100;
+
+  background: var(--primary); color: white;
+
+  padding: 14px 16px;
+
+  display: flex; align-items: center; justify-content: space-between;
+
+  box-shadow: var(--shadow);
+
+}
+
+.header h1 { font-size: 18px; font-weight: 600; }
+
+.header .sync-status { font-size: 12px; opacity: 0.9; }
+
+.header .sync-status.syncing::after { content: ' ⏳'; }
+
+.header .sync-status.synced::after { content: ' ✓'; }
+
+.header .sync-status.error::after { content: ' ⚠️'; }
+
+
+
+/* ボトムナビ */
+
+.bottom-nav {
+
+  position: fixed; bottom: 0; left: 0; right: 0;
+
+  background: white; border-top: 1px solid var(--border);
+
+  display: flex; justify-content: space-around;
+
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+
+  z-index: 100;
+
+}
+
+.bottom-nav button {
+
+  flex: 1; background: none; border: none; padding: 6px 4px;
+
+  color: var(--text-sub); font-size: 11px;
+
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+
+  cursor: pointer;
+
+}
+
+.bottom-nav button.active { color: var(--primary); }
+
+.bottom-nav button .icon { font-size: 22px; }
+
+
+
+/* メイン */
+
+.main { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+.page { display: none; }
+
+.page.active { display: block; }
+
+
+
+/* カード */
+
+.card {
+
+  background: var(--card); border-radius: 12px;
+
+  padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow);
+
+}
+
+.card h2 { font-size: 14px; color: var(--text-sub); margin-bottom: 10px; font-weight: 600; }
+
+
+
+/* ダッシュボード */
+
+.stat-grid {
+
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+
+}
+
+.stat-box {
+
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+
+  color: white; padding: 14px; border-radius: 10px;
+
+}
+
+.stat-box .label { font-size: 11px; opacity: 0.9; margin-bottom: 4px; }
+
+.stat-box .value { font-size: 24px; font-weight: 700; }
+
+.stat-box .sub { font-size: 11px; opacity: 0.9; margin-top: 2px; }
+
+.stat-box.recent { background: linear-gradient(135deg, #1976d2, #42a5f5); }
+
+
+
+/* 試合カード */
+
+.match-item {
+
+  display: flex; align-items: center; padding: 12px 0;
+
+  border-bottom: 1px solid var(--border); cursor: pointer;
+
+  gap: 12px;
+
+}
+
+.match-item:last-child { border-bottom: none; }
+
+.match-item .result-badge {
+
+  width: 36px; height: 36px; border-radius: 50%;
+
+  display: flex; align-items: center; justify-content: center;
+
+  color: white; font-weight: 700; flex-shrink: 0;
+
+}
+
+.match-item .result-badge.win { background: var(--win); }
+
+.match-item .result-badge.lose { background: var(--lose); }
+
+.match-item .info { flex: 1; min-width: 0; }
+
+.match-item .info .opp { font-weight: 600; font-size: 15px; }
+
+.match-item .info .meta { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+
+.match-item .score { font-size: 14px; color: var(--text-sub); white-space: nowrap; }
+
+
+
+/* 対戦相手カード */
+
+.opp-item {
+
+  display: flex; align-items: center; padding: 14px 0;
+
+  border-bottom: 1px solid var(--border); cursor: pointer;
+
+  gap: 12px;
+
+}
+
+.opp-item:last-child { border-bottom: none; }
+
+.opp-item .avatar {
+
+  width: 44px; height: 44px; border-radius: 50%;
+
+  background: var(--primary-light); color: white;
+
+  display: flex; align-items: center; justify-content: center;
+
+  font-weight: 700; font-size: 18px; flex-shrink: 0;
+
+}
+
+.opp-item .info { flex: 1; min-width: 0; }
+
+.opp-item .info .name { font-weight: 600; }
+
+.opp-item .info .meta { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+
+.opp-item .stat { text-align: right; font-size: 13px; }
+
+.opp-item .stat .wl { font-weight: 700; }
+
+.opp-item .stat .rate { font-size: 11px; color: var(--text-sub); }
+
+
+
+/* FAB */
+
+.fab {
+
+  position: fixed; bottom: 80px; right: 16px;
+
+  width: 56px; height: 56px; border-radius: 50%;
+
+  background: var(--primary); color: white;
+
+  border: none; font-size: 28px; cursor: pointer;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+  z-index: 50; display: flex; align-items: center; justify-content: center;
+
+}
+
+
+
+/* モーダル */
+
+.modal {
+
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+
+  z-index: 200; display: none;
+
+  align-items: flex-end; justify-content: center;
+
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+
+  background: white; width: 100%; max-width: 600px;
+
+  max-height: 92vh; border-radius: 16px 16px 0 0;
+
+  display: flex; flex-direction: column;
+
+  animation: slideUp 0.25s ease;
+
+}
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.modal-header {
+
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+
+  display: flex; justify-content: space-between; align-items: center;
+
+  position: sticky; top: 0; background: white; z-index: 10;
+
+  border-radius: 16px 16px 0 0;
+
+}
+
+.modal-header h2 { font-size: 17px; }
+
+.modal-header button {
+
+  background: none; border: none; font-size: 22px; cursor: pointer;
+
+  color: var(--text-sub); padding: 4px 8px;
+
+}
+
+.modal-body { padding: 16px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+
+.modal-footer {
+
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+
+  border-top: 1px solid var(--border);
+
+  display: flex; gap: 10px;
+
+}
+
+.modal-footer button {
+
+  flex: 1; padding: 14px; border-radius: 10px; border: none;
+
+  font-weight: 600; cursor: pointer;
+
+}
+
+.btn-primary { background: var(--primary); color: white; }
+
+.btn-secondary { background: #eee; color: var(--text); }
+
+.btn-danger { background: var(--lose); color: white; }
+
+
+
+/* フォーム */
+
+.form-group { margin-bottom: 18px; }
+
+.form-group label {
+
+  display: block; font-size: 13px; color: var(--text-sub);
+
+  margin-bottom: 8px; font-weight: 600;
+
+}
+
+.form-group label .required { color: var(--lose); }
+
+.form-group input[type="date"],
+
+.form-group input[type="text"],
+
+.form-group input[type="url"],
+
+.form-group textarea {
+
+  width: 100%; padding: 12px; border: 1px solid var(--border);
+
+  border-radius: 8px; background: #fafafa;
+
+}
+
+.form-group textarea { resize: vertical; min-height: 60px; }
+
+.form-group input:focus, .form-group textarea:focus {
+
+  outline: none; border-color: var(--primary); background: white;
+
+}
+
+
+
+/* ボタングループ */
+
+.btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.btn-group button {
+
+  padding: 10px 14px; border: 1px solid var(--border);
+
+  background: white; border-radius: 8px; cursor: pointer;
+
+  font-size: 14px;
+
+}
+
+.btn-group button.selected {
+
+  background: var(--primary); color: white; border-color: var(--primary);
+
+}
+
+
+
+/* タグ */
+
+.tag-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.tag {
+
+  padding: 8px 12px; border: 1px solid var(--border);
+
+  background: white; border-radius: 20px; cursor: pointer;
+
+  font-size: 13px;
+
+}
+
+.tag.selected { background: var(--primary); color: white; border-color: var(--primary); }
+
+.tag-add {
+
+  padding: 8px 12px; border: 1px dashed var(--primary);
+
+  background: white; color: var(--primary); border-radius: 20px; cursor: pointer;
+
+  font-size: 13px;
+
+}
+
+
+
+/* スコア入力 */
+
+.score-row {
+
+  display: flex; align-items: center; gap: 12px;
+
+  margin-bottom: 10px; padding: 10px; background: #fafafa;
+
+  border-radius: 10px;
+
+}
+
+.score-row .set-label { font-size: 12px; color: var(--text-sub); width: 40px; }
+
+.score-counter { display: flex; align-items: center; gap: 4px; }
+
+.score-counter .count {
+
+  width: 38px; text-align: center; font-size: 20px; font-weight: 700;
+
+}
+
+.score-counter button {
+
+  width: 32px; height: 32px; border-radius: 50%;
+
+  border: 1px solid var(--border); background: white;
+
+  font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+
+}
+
+.score-vs { font-size: 12px; color: var(--text-sub); }
+
+.score-result-display {
+
+  text-align: center; padding: 8px; margin-top: 8px;
+
+  font-size: 14px; font-weight: 600;
+
+}
+
+.score-result-display.win { color: var(--win); }
+
+.score-result-display.lose { color: var(--lose); }
+
+
+
+/* ベアレベル選択 */
+
+.bear-level-grid {
+
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+
+}
+
+.bear-level-grid button {
+
+  padding: 10px 6px; border: 1px solid var(--border);
+
+  background: white; border-radius: 8px; cursor: pointer;
+
+  font-size: 12px; text-align: center;
+
+}
+
+.bear-level-grid button.selected {
+
+  background: var(--primary); color: white; border-color: var(--primary);
+
+}
+
+.bear-level-grid button .lv-num { font-weight: 700; font-size: 14px; display: block; }
+
+
+
+/* 詳細画面 */
+
+.detail-header {
+
+  text-align: center; padding: 12px 0; margin-bottom: 12px;
+
+}
+
+.detail-header .name { font-size: 22px; font-weight: 700; }
+
+.detail-header .sub { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
+
+
+
+.h2h-stat {
+
+  display: flex; justify-content: space-around; padding: 12px;
+
+  background: var(--bg); border-radius: 10px; margin-bottom: 12px;
+
+}
+
+.h2h-stat .item { text-align: center; }
+
+.h2h-stat .item .label { font-size: 11px; color: var(--text-sub); }
+
+.h2h-stat .item .value { font-size: 20px; font-weight: 700; color: var(--primary); }
+
+
+
+/* 統計画面 */
+
+.analytics-row {
+
+  display: flex; justify-content: space-between; align-items: center;
+
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+
+}
+
+.analytics-row:last-child { border-bottom: none; }
+
+.analytics-row .label { font-size: 14px; }
+
+.analytics-row .bar-container {
+
+  flex: 1; height: 8px; background: #eee; border-radius: 4px;
+
+  margin: 0 12px; position: relative; overflow: hidden;
+
+}
+
+.analytics-row .bar { height: 100%; background: var(--primary); border-radius: 4px; }
+
+.analytics-row .stat-text {
+
+  font-size: 12px; color: var(--text-sub); white-space: nowrap;
+
+  min-width: 70px; text-align: right;
+
+}
+
+
+
+/* 動画埋め込み */
+
+.video-embed {
+
+  position: relative; padding-bottom: 56.25%; height: 0;
+
+  border-radius: 8px; overflow: hidden; margin-top: 8px;
+
+}
+
+.video-embed iframe {
+
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+
+}
+
+
+
+/* ローディング */
+
+.loading { text-align: center; padding: 40px; color: var(--text-sub); }
+
+
+
+/* 空状態 */
+
+.empty {
+
+  text-align: center; padding: 40px 20px; color: var(--text-sub);
+
+}
+
+.empty .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+
+
+
+/* バナー */
+
+.banner {
+
+  background: #fff3cd; color: #856404;
+
+  padding: 10px 16px; font-size: 13px;
+
+  border-left: 4px solid #ffc107;
+
+}
+
+.banner.error { background: #f8d7da; color: #721c24; border-color: #dc3545; }
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<header class="header">
+
+  <h1>🎾 テニス戦績</h1>
+
+  <span class="sync-status" id="syncStatus">同期中</span>
+
+</header>
+
+
+
+<div id="banner" style="display:none;" class="banner"></div>
+
+
+
+<main class="main">
+
+
+
+  <!-- ダッシュボード -->
+
+  <section class="page active" id="page-dashboard">
+
+    <div class="stat-grid">
+
+      <div class="stat-box">
+
+        <div class="label">直近1年 戦績</div>
+
+        <div class="value" id="statYearWL">-</div>
+
+        <div class="sub" id="statYearRate">勝率 -</div>
+
+      </div>
+
+      <div class="stat-box recent">
+
+        <div class="label">直近10試合</div>
+
+        <div class="value" id="stat10WL">-</div>
+
+        <div class="sub" id="stat10Rate">勝率 -</div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="card">
+
+      <h2>📅 直近の試合</h2>
+
+      <div id="recentMatches"><div class="loading">読み込み中…</div></div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- 試合一覧 -->
+
+  <section class="page" id="page-matches">
+
+    <div class="card">
+
+      <h2>📋 試合履歴（直近1年）</h2>
+
+      <div id="matchesList"><div class="loading">読み込み中…</div></div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- 対戦相手 -->
+
+  <section class="page" id="page-opponents">
+
+    <div class="card">
+
+      <h2>👤 対戦相手</h2>
+
+      <div id="opponentsList"><div class="loading">読み込み中…</div></div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- 分析 -->
+
+  <section class="page" id="page-analytics">
+
+    <div class="card">
+
+      <h2>🏆 ベアレベル別勝率（直近1年）</h2>
+
+      <div id="analyticsBear"><div class="loading">読み込み中…</div></div>
+
+    </div>
+
+    <div class="card">
+
+      <h2>🎯 戦型別勝率（直近1年）</h2>
+
+      <div id="analyticsStyle"><div class="loading">読み込み中…</div></div>
+
+    </div>
+
+  </section>
+
+
+
+</main>
+
+
+
+<!-- FAB -->
+
+<button class="fab" id="fabAdd" title="新規試合">＋</button>
+
+
+
+<!-- ボトムナビ -->
+
+<nav class="bottom-nav">
+
+  <button class="active" data-page="dashboard"><span class="icon">📊</span><span>ホーム</span></button>
+
+  <button data-page="matches"><span class="icon">📋</span><span>試合</span></button>
+
+  <button data-page="opponents"><span class="icon">👤</span><span>相手</span></button>
+
+  <button data-page="analytics"><span class="icon">📈</span><span>分析</span></button>
+
+</nav>
+
+
+
+<!-- モーダル：試合 -->
+
+<div class="modal" id="modalMatch">
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+
+      <h2 id="modalMatchTitle">試合を記録</h2>
+
+      <button onclick="closeModal('modalMatch')">✕</button>
+
+    </div>
+
+    <div class="modal-body" id="modalMatchBody"></div>
+
+    <div class="modal-footer">
+
+      <button class="btn-danger" id="btnMatchDelete" style="display:none;">削除</button>
+
+      <button class="btn-secondary" onclick="closeModal('modalMatch')">キャンセル</button>
+
+      <button class="btn-primary" id="btnMatchSave">保存</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- モーダル：対戦相手 -->
+
+<div class="modal" id="modalOpponent">
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+
+      <h2 id="modalOpponentTitle">対戦相手</h2>
+
+      <button onclick="closeModal('modalOpponent')">✕</button>
+
+    </div>
+
+    <div class="modal-body" id="modalOpponentBody"></div>
+
+    <div class="modal-footer">
+
+      <button class="btn-danger" id="btnOppDelete" style="display:none;">削除</button>
+
+      <button class="btn-secondary" onclick="closeModal('modalOpponent')">キャンセル</button>
+
+      <button class="btn-primary" id="btnOppSave">保存</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- モーダル：相手詳細 -->
+
+<div class="modal" id="modalOppDetail">
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+
+      <h2>対戦相手詳細</h2>
+
+      <button onclick="closeModal('modalOppDetail')">✕</button>
+
+    </div>
+
+    <div class="modal-body" id="modalOppDetailBody"></div>
+
+    <div class="modal-footer">
+
+      <button class="btn-secondary" id="btnOppEdit">編集</button>
+
+      <button class="btn-primary" onclick="closeModal('modalOppDetail')">閉じる</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- モーダル：試合詳細 -->
+
+<div class="modal" id="modalMatchDetail">
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+
+      <h2>試合詳細</h2>
+
+      <button onclick="closeModal('modalMatchDetail')">✕</button>
+
+    </div>
+
+    <div class="modal-body" id="modalMatchDetailBody"></div>
+
+    <div class="modal-footer">
+
+      <button class="btn-secondary" id="btnMatchEdit">編集</button>
+
+      <button class="btn-primary" onclick="closeModal('modalMatchDetail')">閉じる</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- モーダル：相手選択 -->
+
+<div class="modal" id="modalSelectOpp">
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+
+      <h2>対戦相手を選ぶ</h2>
+
+      <button onclick="closeModal('modalSelectOpp')">✕</button>
+
+    </div>
+
+    <div class="modal-body">
+
+      <input type="text" id="oppSearchInput" placeholder="🔍 名前 / あだ名で検索" 
+
+             style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; margin-bottom:12px;">
+
+      <div id="oppSelectList"></div>
+
+      <button class="tag-add" style="margin-top:12px; width:100%;" onclick="openNewOpponentFromSelect()">+ 新しい相手を登録</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+"></script>
+
+<script>
+
+// ====================== 設定 ======================
+
+const SUPABASE_URL = 'https://zetusgpfowyjdjrnqchy.supabase.co';
+
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpldHVzZ3Bmb3d5amRqcm5xY2h5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NjQ1MjcsImV4cCI6MjA5ODE0MDUyN30.R8CNKJfJ1vrIoJ93_0xhao5NC5lj0vq9iBud1jmI_rc';
+
+const { createClient } = supabase;
+
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
+
+// ====================== グローバル状態 ======================
+
+const state = {
+
+  matches: [],
+
+  opponents: [],
+
+  presets: { tournament: [], play_style: [], shot: [], tactic: [], issue: [], recorded_by: [] },
+
+  editingMatch: null,
+
+  editingOpponent: null,
+
+  oppSelectCallback: null,
+
+};
+
+
+
+const BEAR_LEVELS = [
+
+  { lv: 1, name: 'はじめて' },
+
+  { lv: 2, name: '初心者' },
+
+  { lv: 3, name: '初級' },
+
+  { lv: 4, name: '初中級' },
+
+  { lv: 5, name: '中級' },
+
+  { lv: 6, name: '中上級' },
+
+  { lv: 7, name: '上級' },
+
+  { lv: 8, name: '超上級' },
+
+  { lv: 9, name: 'プロ' },
+
+];
+
+
+
+const SURFACES = ['ハード', 'クレー', 'オムニ', 'カーペット', 'グラス'];
+
+const HANDS = ['右', '左'];
+
+
+
+// ====================== 同期ステータス ======================
+
+function setSyncStatus(s) {
+
+  const el = document.getElementById('syncStatus');
+
+  el.className = 'sync-status ' + s;
+
+  el.textContent = s === 'syncing' ? '同期中' : s === 'synced' ? '同期済' : 'エラー';
+
+}
+
+function showBanner(msg, isError = false) {
+
+  const el = document.getElementById('banner');
+
+  el.textContent = msg;
+
+  el.className = 'banner' + (isError ? ' error' : '');
+
+  el.style.display = 'block';
+
+  if (!isError) setTimeout(() => el.style.display = 'none', 3000);
+
+}
+
+
+
+// ====================== データロード ======================
+
+async function loadAll() {
+
+  setSyncStatus('syncing');
+
+  try {
+
+    const [m, o, p] = await Promise.all([
+
+      db.from('matches').select('*').order('match_date', { ascending: false }),
+
+      db.from('opponents').select('*').order('updated_at', { ascending: false }),
+
+      db.from('tag_presets').select('*').order('usage_count', { ascending: false }),
+
+    ]);
+
+    if (m.error) throw m.error;
+
+    if (o.error) throw o.error;
+
+    if (p.error) throw p.error;
+
+    state.matches = m.data || [];
+
+    state.opponents = o.data || [];
+
+    state.presets = { tournament: [], play_style: [], shot: [], tactic: [], issue: [], recorded_by: [] };
+
+    (p.data || []).forEach(row => {
+
+      if (state.presets[row.category]) state.presets[row.category].push(row.value);
+
+    });
+
+    setSyncStatus('synced');
+
+    renderAll();
+
+  } catch (e) {
+
+    console.error(e);
+
+    setSyncStatus('error');
+
+    showBanner('読み込みエラー: ' + e.message, true);
+
+  }
+
+}
+
+
+
+// ====================== 共通：プリセット追加 ======================
+
+async function addPreset(category, value) {
+
+  if (!value) return;
+
+  if (state.presets[category] && state.presets[category].includes(value)) return;
+
+  try {
+
+    await db.from('tag_presets').insert({ category, value });
+
+    if (!state.presets[category]) state.presets[category] = [];
+
+    state.presets[category].push(value);
+
+  } catch (e) { console.error('preset add error', e); }
+
+}
+
+
+
+// ====================== ヘルパ ======================
+
+function oppDisplayName(opp) {
+
+  if (!opp) return '（未登録）';
+
+  if (opp.nickname && opp.name) return `${opp.nickname} (${opp.name})`;
+
+  return opp.nickname || opp.name || '名無し';
+
+}
+
+function oppShortName(opp) {
+
+  if (!opp) return '?';
+
+  return opp.nickname || opp.name || '?';
+
+}
+
+function oppInitial(opp) {
+
+  const n = oppShortName(opp);
+
+  return n.charAt(0).toUpperCase();
+
+}
+
+function scoreToText(score) {
+
+  if (!Array.isArray(score)) return '-';
+
+  return score.map(s => `${s.me}-${s.opp}`).join(', ');
+
+}
+
+function computeResultFromScore(score) {
+
+  if (!Array.isArray(score) || score.length === 0) return null;
+
+  let meSets = 0, oppSets = 0;
+
+  score.forEach(s => { if (s.me > s.opp) meSets++; else if (s.opp > s.me) oppSets++; });
+
+  if (meSets === oppSets) return null;
+
+  return meSets > oppSets ? '勝' : '負';
+
+}
+
+function withinOneYear(dateStr) {
+
+  if (!dateStr) return false;
+
+  const d = new Date(dateStr);
+
+  const oneYearAgo = new Date();
+
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+  return d >= oneYearAgo;
+
+}
+
+function fmtDate(dateStr) {
+
+  if (!dateStr) return '';
+
+  const d = new Date(dateStr);
+
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+
+}
+
+function ytEmbed(url) {
+
+  if (!url) return '';
+
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+
+  if (!m) return '';
+
+  return `<div class="video-embed">https://www.youtube.com/embed/${m[1]}</div>`;
+
+}
+
+
+
+// ====================== レンダリング：ダッシュボード ======================
+
+function renderDashboard() {
+
+  // 直近1年
+
+  const oneYear = state.matches.filter(m => withinOneYear(m.match_date));
+
+  const yw = oneYear.filter(m => m.result === '勝').length;
+
+  const yl = oneYear.filter(m => m.result === '負').length;
+
+  document.getElementById('statYearWL').textContent = `${yw}-${yl}`;
+
+  document.getElementById('statYearRate').textContent = 
+
+    (yw + yl) > 0 ? `勝率 ${Math.round(yw/(yw+yl)*100)}%` : '勝率 -';
+
+
+
+  // 直近10試合
+
+  const last10 = state.matches.slice(0, 10);
+
+  const w10 = last10.filter(m => m.result === '勝').length;
+
+  const l10 = last10.filter(m => m.result === '負').length;
+
+  document.getElementById('stat10WL').textContent = `${w10}-${l10}`;
+
+  document.getElementById('stat10Rate').textContent = 
+
+    (w10 + l10) > 0 ? `勝率 ${Math.round(w10/(w10+l10)*100)}%` : '勝率 -';
+
+
+
+  // 直近の試合
+
+  const recent = state.matches.slice(0, 5);
+
+  const el = document.getElementById('recentMatches');
+
+  if (recent.length === 0) {
+
+    el.innerHTML = '<div class="empty"><div class="icon">🎾</div>まだ試合がありません<br>右下の「＋」ボタンから記録</div>';
+
+  } else {
+
+    el.innerHTML = recent.map(m => matchItemHTML(m)).join('');
+
+    el.querySelectorAll('[data-match-id]').forEach(node => {
+
+      node.addEventListener('click', () => openMatchDetail(node.dataset.matchId));
+
+    });
+
+  }
+
+}
+
+
+
+function matchItemHTML(m) {
+
+  const opp = state.opponents.find(o => o.id === m.opponent_id);
+
+  const cls = m.result === '勝' ? 'win' : 'lose';
+
+  const label = m.result || '?';
+
+  return `
+
+    <div class="match-item" data-match-id="${m.id}">
+
+      <div class="result-badge ${cls}">${label}</div>
+
+      <div class="info">
+
+        <div class="opp">${oppDisplayName(opp)}</div>
+
+        <div class="meta">${fmtDate(m.match_date)} ${m.tournament_name ? '・'+m.tournament_name : ''} ${m.surface ? '・'+m.surface : ''}</div>
+
+      </div>
+
+      <div class="score">${scoreToText(m.score)}</div>
+
+    </div>`;
+
+}
+
+
+
+// ====================== レンダリング：試合一覧 ======================
+
+function renderMatches() {
+
+  const list = state.matches.filter(m => withinOneYear(m.match_date));
+
+  const el = document.getElementById('matchesList');
+
+  if (list.length === 0) {
+
+    el.innerHTML = '<div class="empty"><div class="icon">📋</div>直近1年の試合はありません</div>';
+
+    return;
+
+  }
+
+  el.innerHTML = list.map(m => matchItemHTML(m)).join('');
+
+  el.querySelectorAll('[data-match-id]').forEach(node => {
+
+    node.addEventListener('click', () => openMatchDetail(node.dataset.matchId));
+
+  });
+
+}
+
+
+
+// ====================== レンダリング：対戦相手一覧 ======================
+
+function renderOpponents() {
+
+  const el = document.getElementById('opponentsList');
+
+  if (state.opponents.length === 0) {
+
+    el.innerHTML = '<div class="empty"><div class="icon">👤</div>対戦相手はまだいません<br><button class="tag-add" style="margin-top:12px;" onclick="openOpponentModal()">+ 新規登録</button></div>';
+
+    return;
+
+  }
+
+  // 直近1年の試合で集計
+
+  const oneYearMatches = state.matches.filter(m => withinOneYear(m.match_date));
+
+  
+
+  const items = state.opponents.map(opp => {
+
+    const matches = oneYearMatches.filter(m => m.opponent_id === opp.id);
+
+    const w = matches.filter(m => m.result === '勝').length;
+
+    const l = matches.filter(m => m.result === '負').length;
+
+    const total = w + l;
+
+    const rate = total > 0 ? Math.round(w/total*100) : null;
+
+    const lv = opp.bear_level ? `Lv.${opp.bear_level}` : '';
+
+    return { opp, w, l, total, rate, lv };
+
+  }).sort((a, b) => b.total - a.total);
+
+
+
+  el.innerHTML = items.map(({opp, w, l, total, rate, lv}) => `
+
+    <div class="opp-item" data-opp-id="${opp.id}">
+
+      <div class="avatar">${oppInitial(opp)}</div>
+
+      <div class="info">
+
+        <div class="name">${oppDisplayName(opp)}</div>
+
+        <div class="meta">${lv} ${opp.handedness ? '・'+opp.handedness+'利き' : ''} ${opp.play_style ? '・'+opp.play_style : ''}</div>
+
+      </div>
+
+      <div class="stat">
+
+        <div class="wl">${w}-${l}</div>
+
+        <div class="rate">${rate !== null ? rate+'%' : '-'}</div>
+
+      </div>
+
+    </div>
+
+  `).join('') + 
+
+  `<button class="tag-add" style="margin-top:16px; width:100%;" onclick="openOpponentModal()">+ 新規登録</button>`;
+
+  
+
+  el.querySelectorAll('[data-opp-id]').forEach(node => {
+
+    node.addEventListener('click', () => openOpponentDetail(node.dataset.oppId));
+
+  });
+
+}
+
+
+
+// ====================== レンダリング：分析 ======================
+
+function renderAnalytics() {
+
+  const matches = state.matches.filter(m => withinOneYear(m.match_date));
+
+
+
+  // ベアレベル別
+
+  const bearStats = {};
+
+  BEAR_LEVELS.forEach(b => bearStats[b.lv] = { w: 0, l: 0 });
+
+  matches.forEach(m => {
+
+    const opp = state.opponents.find(o => o.id === m.opponent_id);
+
+    if (!opp || !opp.bear_level) return;
+
+    if (m.result === '勝') bearStats[opp.bear_level].w++;
+
+    else if (m.result === '負') bearStats[opp.bear_level].l++;
+
+  });
+
+  const bearEl = document.getElementById('analyticsBear');
+
+  const bearRows = BEAR_LEVELS.map(b => {
+
+    const s = bearStats[b.lv];
+
+    const total = s.w + s.l;
+
+    if (total === 0) return null;
+
+    const rate = total > 0 ? Math.round(s.w/total*100) : 0;
+
+    return `<div class="analytics-row">
+
+      <div class="label">Lv.${b.lv} ${b.name}</div>
+
+      <div class="bar-container"><div class="bar" style="width:${rate}%"></div></div>
+
+      <div class="stat-text">${s.w}-${s.l} (${rate}%)</div>
+
+    </div>`;
+
+  }).filter(Boolean);
+
+  bearEl.innerHTML = bearRows.length ? bearRows.join('') : '<div class="empty">データなし</div>';
+
+
+
+  // 戦型別
+
+  const styleStats = {};
+
+  matches.forEach(m => {
+
+    const opp = state.opponents.find(o => o.id === m.opponent_id);
+
+    if (!opp || !opp.play_style) return;
+
+    if (!styleStats[opp.play_style]) styleStats[opp.play_style] = { w: 0, l: 0 };
+
+    if (m.result === '勝') styleStats[opp.play_style].w++;
+
+    else if (m.result === '負') styleStats[opp.play_style].l++;
+
+  });
+
+  const styleEl = document.getElementById('analyticsStyle');
+
+  const styleKeys = Object.keys(styleStats);
+
+  if (styleKeys.length === 0) {
+
+    styleEl.innerHTML = '<div class="empty">データなし</div>';
+
+  } else {
+
+    styleEl.innerHTML = styleKeys.map(k => {
+
+      const s = styleStats[k];
+
+      const total = s.w + s.l;
+
+      const rate = total > 0 ? Math.round(s.w/total*100) : 0;
+
+      return `<div class="analytics-row">
+
+        <div class="label">${k}</div>
+
+        <div class="bar-container"><div class="bar" style="width:${rate}%"></div></div>
+
+        <div class="stat-text">${s.w}-${s.l} (${rate}%)</div>
+
+      </div>`;
+
+    }).join('');
+
+  }
+
+}
+
+
+
+function renderAll() {
+
+  renderDashboard();
+
+  renderMatches();
+
+  renderOpponents();
+
+  renderAnalytics();
+
+}
+
+
+
+// ====================== ナビゲーション ======================
+
+document.querySelectorAll('.bottom-nav button').forEach(btn => {
+
+  btn.addEventListener('click', () => {
+
+    document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
+
+    btn.classList.add('active');
+
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+    document.getElementById('page-' + btn.dataset.page).classList.add('active');
+
+    window.scrollTo(0, 0);
+
+  });
+
+});
+
+
+
+// ====================== モーダル：基本 ======================
+
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+
+
+// ====================== 試合モーダル ======================
+
+document.getElementById('fabAdd').addEventListener('click', () => openMatchModal(null));
+
+
+
+function openMatchModal(match) {
+
+  state.editingMatch = match ? { ...match, score: Array.isArray(match.score) ? [...match.score] : [{me:0,opp:0}] } 
+
+                              : { 
+
+                                match_date: new Date().toISOString().slice(0,10),
+
+                                tournament_name: '',
+
+                                opponent_id: null,
+
+                                surface: null,
+
+                                score: [{me:0,opp:0}],
+
+                                result: null,
+
+                                effective_tactics: [],
+
+                                issues: [],
+
+                                video_url: '',
+
+                                recorded_by: '自分'
+
+                              };
+
+  document.getElementById('modalMatchTitle').textContent = match ? '試合を編集' : '試合を記録';
+
+  document.getElementById('btnMatchDelete').style.display = match ? 'block' : 'none';
+
+  renderMatchForm();
+
+  openModal('modalMatch');
+
+}
+
+
+
+function renderMatchForm() {
+
+  const m = state.editingMatch;
+
+  const opp = state.opponents.find(o => o.id === m.opponent_id);
+
+  
+
+  document.getElementById('modalMatchBody').innerHTML = `
+
+    <div class="form-group">
+
+      <label>日付</label>
+
+      <input type="date" id="f_date" value="${m.match_date}">
+
+    </div>
+
+    
+
+    <div class="form-group">
+
+      <label>対戦相手 <span class="required">*</span></label>
+
+      <button type="button" class="tag-add" style="width:100%; text-align:left;" onclick="openOpponentSelector()">
+
+        ${opp ? oppDisplayName(opp) : '👤 タップして選択 / 新規登録'}
+
+      </button>
+
+    </div>
+
+    
+
+    <div class="form-group">
+
+      <label>大会・練習名</label>
+
+      <div class="btn-group" id="f_tournament_btns"></div>
+
+      <input type="text" id="f_tournament_new" placeholder="新規追加…" 
+
+             value="${m.tournament_name || ''}" style="margin-top:8px;">
+
+    </div>
+
+    
+
+    <div class="form-group">
+
+      <label>サーフェス</label>
+
+      <div class="btn-group" id="f_surface_btns"></div>
+
+    </div>
+
+    
+
+    <div class="form-group">
+
+      <label>スコア</label>
+
+      <div id="f_score_rows"></div>
+
+      <button type="button" class="tag-add" style="margin-top:8px;" onclick="addScoreSet()">+ セット追加</button>
+
+      <div class="score-result-display" id="f_result_display"></div>
+
+    </div>
+
+    
+
+    <div class="form-group">
+
+      <label>効いた戦術</label>
+
+      <div class="tag-group" id="f_tactic_tags"></div>
+
+    </div>
+
+    
+
+    <div class="form-group">
+
+      <label>課題・反省</label>
+
+      <div class="tag-group" id="f_issue_tags"></div>
+
+    </div>
+
+    
+
+    <div class="form-group">
+
+      <label>動画URL（YouTube）</label>
+
+      <input type="url" id="f_video" value="${m.video_url || ''}" placeholder="https://youtube.com/...">
+
+    </div>
+
+    
+
+    <div class="form-group">
+
+      <label>入力者</label>
+
+      <div class="btn-group" id="f_recordedby_btns"></div>
+
+    </div>
+
+  `;
+
+  
+
+  // 大会名ボタン
+
+  renderHistoryBtns('f_tournament_btns', 'tournament', m.tournament_name, v => { m.tournament_name = v; document.getElementById('f_tournament_new').value = v; });
+
+  document.getElementById('f_tournament_new').addEventListener('input', e => { m.tournament_name = e.target.value; });
+
+  
+
+  // サーフェス
+
+  renderChoiceBtns('f_surface_btns', SURFACES, m.surface, v => { m.surface = v; });
+
+  
+
+  // 入力者
+
+  renderHistoryBtns('f_recordedby_btns', 'recorded_by', m.recorded_by, v => { m.recorded_by = v; });
+
+  
+
+  // スコア
+
+  renderScoreRows();
+
+  
+
+  // タグ
+
+  renderTagGroup('f_tactic_tags', 'tactic', m.effective_tactics);
+
+  renderTagGroup('f_issue_tags', 'issue', m.issues);
+
+  
+
+  // 日付
+
+  document.getElementById('f_date').addEventListener('change', e => { m.match_date = e.target.value; });
+
+  document.getElementById('f_video').addEventListener('input', e => { m.video_url = e.target.value; });
+
+}
+
+
+
+function renderChoiceBtns(containerId, options, selected, onSelect) {
+
+  const el = document.getElementById(containerId);
+
+  el.innerHTML = options.map(v => 
+
+    `<button type="button" class="${selected === v ? 'selected' : ''}" data-v="${v}">${v}</button>`
+
+  ).join('');
+
+  el.querySelectorAll('button').forEach(b => {
+
+    b.addEventListener('click', () => {
+
+      const v = b.dataset.v;
+
+      onSelect(v);
+
+      el.querySelectorAll('button').forEach(x => x.classList.remove('selected'));
+
+      b.classList.add('selected');
+
+    });
+
+  });
+
+}
+
+
+
+function renderHistoryBtns(containerId, category, selected, onSelect) {
+
+  const el = document.getElementById(containerId);
+
+  const list = state.presets[category] || [];
+
+  el.innerHTML = list.map(v => 
+
+    `<button type="button" class="${selected === v ? 'selected' : ''}" data-v="${v}">${v}</button>`
+
+  ).join('');
+
+  el.querySelectorAll('button').forEach(b => {
+
+    b.addEventListener('click', () => {
+
+      const v = b.dataset.v;
+
+      onSelect(v);
+
+      el.querySelectorAll('button').forEach(x => x.classList.remove('selected'));
+
+      b.classList.add('selected');
+
+    });
+
+  });
+
+}
+
+
+
+function renderTagGroup(containerId, category, selectedList) {
+
+  const el = document.getElementById(containerId);
+
+  const list = state.presets[category] || [];
+
+  const sel = selectedList || [];
+
+  el.innerHTML = list.map(v => 
+
+    `<div class="tag ${sel.includes(v) ? 'selected' : ''}" data-v="${v}">${v}</div>`
+
+  ).join('') + `<div class="tag-add" data-add="${category}">+ 追加</div>`;
+
+  el.querySelectorAll('.tag').forEach(t => {
+
+    t.addEventListener('click', () => {
+
+      const v = t.dataset.v;
+
+      const idx = sel.indexOf(v);
+
+      if (idx >= 0) sel.splice(idx, 1); else sel.push(v);
+
+      t.classList.toggle('selected');
+
+    });
+
+  });
+
+  el.querySelector('.tag-add').addEventListener('click', async () => {
+
+    const v = prompt(category === 'tactic' ? '効いた戦術を追加:' : '課題を追加:');
+
+    if (v && v.trim()) {
+
+      await addPreset(category, v.trim());
+
+      sel.push(v.trim());
+
+      renderTagGroup(containerId, category, sel);
+
+    }
+
+  });
+
+}
+
+
+
+function renderScoreRows() {
+
+  const m = state.editingMatch;
+
+  const el = document.getElementById('f_score_rows');
+
+  el.innerHTML = m.score.map((s, i) => `
+
+    <div class="score-row">
+
+      <div class="set-label">Set ${i+1}</div>
+
+      <div class="score-counter">
+
+        <button type="button" onclick="adjustScore(${i}, 'me', -1)">−</button>
+
+        <div class="count">${s.me}</div>
+
+        <button type="button" onclick="adjustScore(${i}, 'me', 1)">＋</button>
+
+      </div>
+
+      <div class="score-vs">vs</div>
+
+      <div class="score-counter">
+
+        <button type="button" onclick="adjustScore(${i}, 'opp', -1)">−</button>
+
+        <div class="count">${s.opp}</div>
+
+        <button type="button" onclick="adjustScore(${i}, 'opp', 1)">＋</button>
+
+      </div>
+
+      ${m.score.length > 1 ? `<button type="button" onclick="removeScoreSet(${i})" style="background:none;border:none;color:#999;font-size:18px;">✕</button>` : ''}
+
+    </div>
+
+  `).join('');
+
+  updateResultDisplay();
+
+}
+
+
+
+function adjustScore(idx, side, delta) {
+
+  const m = state.editingMatch;
+
+  m.score[idx][side] = Math.max(0, m.score[idx][side] + delta);
+
+  renderScoreRows();
+
+}
+
+function addScoreSet() {
+
+  state.editingMatch.score.push({me:0,opp:0});
+
+  renderScoreRows();
+
+}
+
+function removeScoreSet(idx) {
+
+  state.editingMatch.score.splice(idx, 1);
+
+  renderScoreRows();
+
+}
+
+function updateResultDisplay() {
+
+  const m = state.editingMatch;
+
+  const r = computeResultFromScore(m.score);
+
+  m.result = r;
+
+  const el = document.getElementById('f_result_display');
+
+  if (r === '勝') { el.textContent = '✓ 勝ち'; el.className = 'score-result-display win'; }
+
+  else if (r === '負') { el.textContent = '✗ 負け'; el.className = 'score-result-display lose'; }
+
+  else { el.textContent = '勝敗未確定'; el.className = 'score-result-display'; }
+
+}
+
+
+
+// ====================== 試合：保存 ======================
+
+document.getElementById('btnMatchSave').addEventListener('click', async () => {
+
+  const m = state.editingMatch;
+
+  if (!m.opponent_id) { alert('対戦相手を選んでください'); return; }
+
+  if (!m.match_date) { alert('日付を入力してください'); return; }
+
+  if (!m.result) { alert('スコアを入力してください（勝敗が決まる必要があります）'); return; }
+
+  
+
+  setSyncStatus('syncing');
+
+  try {
+
+    const payload = {
+
+      match_date: m.match_date,
+
+      tournament_name: m.tournament_name || null,
+
+      opponent_id: m.opponent_id,
+
+      surface: m.surface || null,
+
+      score: m.score,
+
+      result: m.result,
+
+      effective_tactics: m.effective_tactics || [],
+
+      issues: m.issues || [],
+
+      video_url: m.video_url || null,
+
+      recorded_by: m.recorded_by || null,
+
+      updated_at: new Date().toISOString(),
+
+    };
+
+    if (m.id) {
+
+      const { error } = await db.from('matches').update(payload).eq('id', m.id);
+
+      if (error) throw error;
+
+    } else {
+
+      const { error } = await db.from('matches').insert(payload);
+
+      if (error) throw error;
+
+    }
+
+    // 履歴学習
+
+    if (m.tournament_name) await addPreset('tournament', m.tournament_name);
+
+    if (m.recorded_by) await addPreset('recorded_by', m.recorded_by);
+
+    
+
+    closeModal('modalMatch');
+
+    showBanner('保存しました');
+
+    await loadAll();
+
+  } catch (e) {
+
+    console.error(e);
+
+    setSyncStatus('error');
+
+    alert('保存エラー: ' + e.message);
+
+  }
+
+});
+
+
+
+document.getElementById('btnMatchDelete').addEventListener('click', async () => {
+
+  if (!confirm('この試合を削除しますか？')) return;
+
+  try {
+
+    const { error } = await db.from('matches').delete().eq('id', state.editingMatch.id);
+
+    if (error) throw error;
+
+    closeModal('modalMatch');
+
+    showBanner('削除しました');
+
+    await loadAll();
+
+  } catch (e) { alert('削除エラー: ' + e.message); }
+
+});
+
+
+
+// ====================== 試合詳細 ======================
+
+function openMatchDetail(matchId) {
+
+  const m = state.matches.find(x => x.id === matchId);
+
+  if (!m) return;
+
+  const opp = state.opponents.find(o => o.id === m.opponent_id);
+
+  const body = document.getElementById('modalMatchDetailBody');
+
+  body.innerHTML = `
+
+    <div class="detail-header">
+
+      <div class="name">${m.result === '勝' ? '🏆 勝ち' : '💧 負け'}</div>
+
+      <div class="sub">${fmtDate(m.match_date)} ${m.tournament_name ? '・'+m.tournament_name : ''}</div>
+
+    </div>
+
+    <div class="card" style="margin-bottom:10px;">
+
+      <h2>対戦相手</h2>
+
+      <div style="font-weight:600; font-size:16px;">${oppDisplayName(opp)}</div>
+
+    </div>
+
+    <div class="card" style="margin-bottom:10px;">
+
+      <h2>スコア</h2>
+
+      <div style="font-size:18px; font-weight:600;">${scoreToText(m.score)}</div>
+
+      ${m.surface ? `<div style="margin-top:6px; color:var(--text-sub); font-size:13px;">サーフェス: ${m.surface}</div>` : ''}
+
+    </div>
+
+    ${(m.effective_tactics && m.effective_tactics.length) ? `
+
+      <div class="card" style="margin-bottom:10px;">
+
+        <h2>効いた戦術</h2>
+
+        <div class="tag-group">${m.effective_tactics.map(t => `<div class="tag selected">${t}</div>`).join('')}</div>
+
+      </div>` : ''}
+
+    ${(m.issues && m.issues.length) ? `
+
+      <div class="card" style="margin-bottom:10px;">
+
+        <h2>課題・反省</h2>
+
+        <div class="tag-group">${m.issues.map(t => `<div class="tag selected">${t}</div>`).join('')}</div>
+
+      </div>` : ''}
+
+    ${m.video_url ? `
+
+      <div class="card" style="margin-bottom:10px;">
+
+        <h2>動画</h2>
+
+        ${ytEmbed(m.video_url) || `${m.video_url}${m.video_url}</a>`}
+
+      </div>` : ''}
+
+    ${m.recorded_by ? `<div style="text-align:right; font-size:12px; color:var(--text-sub);">入力者: ${m.recorded_by}</div>` : ''}
+
+  `;
+
+  document.getElementById('btnMatchEdit').onclick = () => {
+
+    closeModal('modalMatchDetail');
+
+    openMatchModal(m);
+
+  };
+
+  openModal('modalMatchDetail');
+
+}
+
+
+
+// ====================== 対戦相手モーダル ======================
+
+function openOpponentModal(opp) {
+
+  state.editingOpponent = opp ? { ...opp, strengths: [...(opp.strengths||[])], weaknesses: [...(opp.weaknesses||[])] } 
+
+                              : {
+
+                                name: '', nickname: '', bear_level: null,
+
+                                handedness: null, play_style: null,
+
+                                strengths: [], weaknesses: [],
+
+                                observation_notes: '', strategy_notes: ''
+
+                              };
+
+  document.getElementById('modalOpponentTitle').textContent = opp ? '対戦相手を編集' : '対戦相手を登録';
+
+  document.getElementById('btnOppDelete').style.display = opp ? 'block' : 'none';
+
+  renderOpponentForm();
+
+  openModal('modalOpponent');
+
+}
+
+
+
+function renderOpponentForm() {
+
+  const o = state.editingOpponent;
+
+  document.getElementById('modalOpponentBody').innerHTML = `
+
+    <div class="form-group">
+
+      <label>名前 <span class="required">※名前 or あだ名のどちらか必須</span></label>
+
+      <input type="text" id="o_name" value="${o.name || ''}" placeholder="例: 山田太郎">
+
+    </div>
+
+    <div class="form-group">
+
+      <label>あだ名</label>
+
+      <input type="text" id="o_nick" value="${o.nickname || ''}" placeholder="例: タロー">
+
+    </div>
+
+    <div class="form-group">
+
+      <label>ベアレベル</label>
+
+      <div class="bear-level-grid" id="o_bear_grid"></div>
+
+    </div>
+
+    <div class="form-group">
+
+      <label>利き手</label>
+
+      <div class="btn-group" id="o_hand_btns"></div>
+
+    </div>
+
+    <div class="form-group">
+
+      <label>戦型</label>
+
+      <div class="btn-group" id="o_style_btns"></div>
+
+    </div>
+
+    <div class="form-group">
+
+      <label>得意ショット</label>
+
+      <div class="tag-group" id="o_strengths_tags"></div>
+
+    </div>
+
+    <div class="form-group">
+
+      <label>弱点ショット</label>
+
+      <div class="tag-group" id="o_weaknesses_tags"></div>
+
+    </div>
+
+    <div class="form-group">
+
+      <label>観察メモ</label>
+
+      <textarea id="o_obs" placeholder="プレースタイル・癖など">${o.observation_notes || ''}</textarea>
+
+    </div>
+
+    <div class="form-group">
+
+      <label>対策メモ</label>
+
+      <textarea id="o_strat" placeholder="次回の戦術プラン">${o.strategy_notes || ''}</textarea>
+
+    </div>
+
+  `;
+
+  
+
+  // ベアレベル
+
+  const bearEl = document.getElementById('o_bear_grid');
+
+  bearEl.innerHTML = BEAR_LEVELS.map(b => `
+
+    <button type="button" class="${o.bear_level === b.lv ? 'selected' : ''}" data-lv="${b.lv}">
+
+      <span class="lv-num">Lv.${b.lv}</span>${b.name}
+
+    </button>
+
+  `).join('');
+
+  bearEl.querySelectorAll('button').forEach(b => {
+
+    b.addEventListener('click', () => {
+
+      o.bear_level = parseInt(b.dataset.lv);
+
+      bearEl.querySelectorAll('button').forEach(x => x.classList.remove('selected'));
+
+      b.classList.add('selected');
+
+    });
+
+  });
+
+  
+
+  // 利き手
+
+  renderChoiceBtns('o_hand_btns', HANDS, o.handedness, v => { o.handedness = v; });
+
+  
+
+  // 戦型
+
+  renderHistoryBtns('o_style_btns', 'play_style', o.play_style, v => { o.play_style = v; });
+
+  
+
+  // ショット
+
+  renderTagGroup('o_strengths_tags', 'shot', o.strengths);
+
+  renderTagGroup('o_weaknesses_tags', 'shot', o.weaknesses);
+
+  
+
+  document.getElementById('o_name').addEventListener('input', e => { o.name = e.target.value; });
+
+  document.getElementById('o_nick').addEventListener('input', e => { o.nickname = e.target.value; });
+
+  document.getElementById('o_obs').addEventListener('input', e => { o.observation_notes = e.target.value; });
+
+  document.getElementById('o_strat').addEventListener('input', e => { o.strategy_notes = e.target.value; });
+
+}
+
+
+
+document.getElementById('btnOppSave').addEventListener('click', async () => {
+
+  const o = state.editingOpponent;
+
+  if (!o.name && !o.nickname) { alert('名前 または あだ名 のどちらかを入力してください'); return; }
+
+  
+
+  setSyncStatus('syncing');
+
+  try {
+
+    const payload = {
+
+      name: o.name || null,
+
+      nickname: o.nickname || null,
+
+      bear_level: o.bear_level || null,
+
+      handedness: o.handedness || null,
+
+      play_style: o.play_style || null,
+
+      strengths: o.strengths || [],
+
+      weaknesses: o.weaknesses || [],
+
+      observation_notes: o.observation_notes || null,
+
+      strategy_notes: o.strategy_notes || null,
+
+      updated_at: new Date().toISOString(),
+
+    };
+
+    let savedId;
+
+    if (o.id) {
+
+      const { error } = await db.from('opponents').update(payload).eq('id', o.id);
+
+      if (error) throw error;
+
+      savedId = o.id;
+
+    } else {
+
+      const { data, error } = await db.from('opponents').insert(payload).select();
+
+      if (error) throw error;
+
+      savedId = data[0].id;
+
+    }
+
+    closeModal('modalOpponent');
+
+    showBanner('保存しました');
+
+    await loadAll();
+
+    // 試合モーダルが開いている場合、選んだ相手をセット
+
+    if (state.oppSelectCallback) {
+
+      state.oppSelectCallback(savedId);
+
+      state.oppSelectCallback = null;
+
+    }
+
+  } catch (e) {
+
+    console.error(e);
+
+    setSyncStatus('error');
+
+    alert('保存エラー: ' + e.message);
+
+  }
+
+});
+
+
+
+document.getElementById('btnOppDelete').addEventListener('click', async () => {
+
+  if (!confirm('この対戦相手を削除しますか？\n（関連する試合の相手欄は空になります）')) return;
+
+  try {
+
+    const { error } = await db.from('opponents').delete().eq('id', state.editingOpponent.id);
+
+    if (error) throw error;
+
+    closeModal('modalOpponent');
+
+    showBanner('削除しました');
+
+    await loadAll();
+
+  } catch (e) { alert('削除エラー: ' + e.message); }
+
+});
+
+
+
+// ====================== 対戦相手詳細 ======================
+
+function openOpponentDetail(oppId) {
+
+  const opp = state.opponents.find(o => o.id === oppId);
+
+  if (!opp) return;
+
+  const oneYearMatches = state.matches.filter(m => withinOneYear(m.match_date) && m.opponent_id === oppId);
+
+  const w = oneYearMatches.filter(m => m.result === '勝').length;
+
+  const l = oneYearMatches.filter(m => m.result === '負').length;
+
+  const total = w + l;
+
+  const rate = total > 0 ? Math.round(w/total*100) : null;
+
+  const lastDate = oneYearMatches[0] ? fmtDate(oneYearMatches[0].match_date) : '-';
+
+  
+
+  document.getElementById('modalOppDetailBody').innerHTML = `
+
+    <div class="detail-header">
+
+      <div class="avatar" style="margin:0 auto 8px; width:60px; height:60px; border-radius:50%; background:var(--primary-light); color:white; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700;">${oppInitial(opp)}</div>
+
+      <div class="name">${oppDisplayName(opp)}</div>
+
+      <div class="sub">
+
+        ${opp.bear_level ? 'Lv.'+opp.bear_level+' ' + (BEAR_LEVELS.find(b=>b.lv===opp.bear_level)?.name || '') : ''}
+
+        ${opp.handedness ? '・'+opp.handedness+'利き' : ''}
+
+        ${opp.play_style ? '・'+opp.play_style : ''}
+
+      </div>
+
+    </div>
+
+    
+
+    <div class="h2h-stat">
+
+      <div class="item"><div class="label">対戦数</div><div class="value">${total}</div></div>
+
+      <div class="item"><div class="label">戦績</div><div class="value">${w}-${l}</div></div>
+
+      <div class="item"><div class="label">勝率</div><div class="value">${rate !== null ? rate+'%' : '-'}</div></div>
+
+    </div>
+
+    
+
+    ${(opp.strengths && opp.strengths.length) ? `
+
+      <div class="card" style="margin-bottom:10px;">
+
+        <h2>得意ショット</h2>
+
+        <div class="tag-group">${opp.strengths.map(t => `<div class="tag selected">${t}</div>`).join('')}</div>
+
+      </div>` : ''}
+
+    ${(opp.weaknesses && opp.weaknesses.length) ? `
+
+      <div class="card" style="margin-bottom:10px;">
+
+        <h2>弱点ショット</h2>
+
+        <div class="tag-group">${opp.weaknesses.map(t => `<div class="tag selected">${t}</div>`).join('')}</div>
+
+      </div>` : ''}
+
+    ${opp.observation_notes ? `
+
+      <div class="card" style="margin-bottom:10px;">
+
+        <h2>観察メモ</h2>
+
+        <div style="white-space:pre-wrap;">${opp.observation_notes}</div>
+
+      </div>` : ''}
+
+    ${opp.strategy_notes ? `
+
+      <div class="card" style="margin-bottom:10px;">
+
+        <h2>対策メモ</h2>
+
+        <div style="white-space:pre-wrap;">${opp.strategy_notes}</div>
+
+      </div>` : ''}
+
+    
+
+    ${oneYearMatches.length ? `
+
+      <div class="card">
+
+        <h2>📅 対戦履歴（直近1年）</h2>
+
+        ${oneYearMatches.map(m => `
+
+          <div class="match-item" data-match-id="${m.id}">
+
+            <div class="result-badge ${m.result==='勝'?'win':'lose'}">${m.result}</div>
+
+            <div class="info">
+
+              <div class="opp">${fmtDate(m.match_date)}</div>
+
+              <div class="meta">${m.tournament_name || ''} ${m.surface ? '・'+m.surface : ''}</div>
+
+            </div>
+
+            <div class="score">${scoreToText(m.score)}</div>
+
+          </div>
+
+        `).join('')}
+
+      </div>` : ''}
+
+  `;
+
+  
+
+  document.getElementById('btnOppEdit').onclick = () => {
+
+    closeModal('modalOppDetail');
+
+    openOpponentModal(opp);
+
+  };
+
+  
+
+  // 履歴の試合タップで詳細
+
+  setTimeout(() => {
+
+    document.querySelectorAll('#modalOppDetailBody [data-match-id]').forEach(node => {
+
+      node.addEventListener('click', () => {
+
+        closeModal('modalOppDetail');
+
+        openMatchDetail(node.dataset.matchId);
+
+      });
+
+    });
+
+  }, 50);
+
+  
+
+  openModal('modalOppDetail');
+
+}
+
+
+
+// ====================== 対戦相手選択 ======================
+
+function openOpponentSelector() {
+
+  state.oppSelectCallback = (id) => {
+
+    state.editingMatch.opponent_id = id;
+
+    renderMatchForm();
+
+  };
+
+  document.getElementById('oppSearchInput').value = '';
+
+  renderOppSelectList('');
+
+  openModal('modalSelectOpp');
+
+}
+
+
+
+function renderOppSelectList(query) {
+
+  const el = document.getElementById('oppSelectList');
+
+  const q = query.toLowerCase();
+
+  const list = state.opponents.filter(o => {
+
+    const n = (o.name || '').toLowerCase();
+
+    const nick = (o.nickname || '').toLowerCase();
+
+    return !q || n.includes(q) || nick.includes(q);
+
+  });
+
+  if (list.length === 0) {
+
+    el.innerHTML = '<div class="empty">該当なし</div>';
+
+    return;
+
+  }
+
+  el.innerHTML = list.map(opp => `
+
+    <div class="opp-item" data-opp-id="${opp.id}">
+
+      <div class="avatar">${oppInitial(opp)}</div>
+
+      <div class="info">
+
+        <div class="name">${oppDisplayName(opp)}</div>
+
+        <div class="meta">${opp.bear_level ? 'Lv.'+opp.bear_level : ''} ${opp.handedness ? '・'+opp.handedness+'利き' : ''}</div>
+
+      </div>
+
+    </div>
+
+  `).join('');
+
+  el.querySelectorAll('[data-opp-id]').forEach(node => {
+
+    node.addEventListener('click', () => {
+
+      const id = node.dataset.oppId;
+
+      if (state.oppSelectCallback) {
+
+        state.oppSelectCallback(id);
+
+        state.oppSelectCallback = null;
+
+      }
+
+      closeModal('modalSelectOpp');
+
+    });
+
+  });
+
+}
+
+document.getElementById('oppSearchInput').addEventListener('input', e => {
+
+  renderOppSelectList(e.target.value);
+
+});
+
+
+
+function openNewOpponentFromSelect() {
+
+  closeModal('modalSelectOpp');
+
+  openOpponentModal(null);
+
+}
+
+
+
+// ====================== 初期化 ======================
+
+loadAll();
+
+
+
+// 30秒ごとに同期（他端末からの更新を反映）
+
+setInterval(loadAll, 30000);
+
+</script>
+
+</body>
+
+</html>
+
+
